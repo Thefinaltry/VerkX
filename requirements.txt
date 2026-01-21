@@ -1,1 +1,6 @@
 
+requests
+beautifulsoup4
+selenium?
+playwright?
+pandas
