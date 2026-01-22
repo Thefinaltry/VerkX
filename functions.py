@@ -2,7 +2,7 @@
 import yfinance as yf
 import tickers as tk
 
-def data_fetcher(ticker, period, interval):
+def data_fetcher(ticker, period="max", interval="1d"):
 
     """
     Fetches stock data for a given ticker symbol using yfinance library.
@@ -35,6 +35,5 @@ def market_data_fetcher(market, period="max", interval="1d"):
         data[ticker] = data_fetcher(ticker, period=period, interval=interval)
 
     return data
-
 
 
