@@ -1,11 +1,11 @@
 # This is the main entry point of the application
 
-import functions as f
+import get_data as gt
 
 
 ### Testing functions ###
-data = f.get_data(country='iceland', period='1mo', interval='1d')
-returns = f.portfolio_returns(data)
+data = gt.get_data(country='iceland', period='1mo', interval='1d')
+returns = gt.portfolio_returns(data)
 
 print(returns)
 
