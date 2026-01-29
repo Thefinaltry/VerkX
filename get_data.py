@@ -61,16 +61,17 @@ def portfolio_returns(data:pd.DataFrame):
     Returns:
         pandas.DataFrame: DataFrame containing daily returns for each ticker.
     """
+    returns = {}
 
-    returns = pd.DataFrame()
     for ticker in data.keys():
-        returns[ticker] = data[ticker]['Close'].pct_change().dropna()
+        returns[ticker] = (
+            data[ticker]["Close"]
+            .pct_change()
+            .dropna()
+            .tolist()
+        )
 
     return returns
-    
-
-
-
 
 
 

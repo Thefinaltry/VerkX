@@ -5,6 +5,10 @@ import pandas as pd
 
 ### Testing functions ###
 
+def get_covariance_matrix(returns):
+    return None
+
+
 def portfolio_weights(cov_matrix:pd.DataFrame, exp_returns:pd.Series, target_return:float):
     
     """
