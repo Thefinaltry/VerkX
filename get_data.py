@@ -67,7 +67,7 @@ def portfolio_returns(data:pd.DataFrame):
         returns[ticker] = (
             data[ticker]["Close"]
             .pct_change()
-            .dropna()
+            #.dropna()
             .tolist()
         )
 

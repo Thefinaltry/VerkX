@@ -6,11 +6,14 @@ import numpy as np
 
 
 ### Testing functions ###
-data = gt.get_data(country='iceland', period='2y', interval='1d')
+data = gt.get_data(country='iceland', period='5y', interval='1d')
+print(data)
 returns = gt.portfolio_returns(data)
 
 for i in range(len(list(returns.keys()))):
-    print(len(returns[list(returns.keys())[i]]))
+    print(list(returns.keys())[i],len(returns[list(returns.keys())[i]]))
+
+#print(returns['AMRQ.IC'])
 
 
 
