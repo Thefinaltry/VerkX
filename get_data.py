@@ -34,7 +34,7 @@ def get_data(ticker=None,country=None, period="max", interval="1d"):
         raise ValueError("Either ticker or country must be provided.")
 
 
-def cal_returns(stock_data:pd.DataFrame):
+def cal_yearly_returns(returns:pd.DataFrame):
 
     """
     Calculates daily returns from stock data.
@@ -46,21 +46,34 @@ def cal_returns(stock_data:pd.DataFrame):
         First value will be NaN since there is no previous day to compare to,
         there for -> size = len(stock_data) - 1.
     """
+    total_return = (1 + returns).prod()
+    total_days = returns.shape[0]
 
-    returns = stock_data['Close'].pct_change().dropna()
+    return total_return ** (252 / total_days) - 1
 
-    return returns
+def portfolio_returns(data: dict, keep_pct: float = 0.9) -> pd.DataFrame:
+    returns_dict = {}
+    lengths = {}
 
-def portfolio_returns(data:pd.DataFrame):
+    for ticker, returns_data in data.items():
+        s = returns_data['Close'].pct_change(fill_method=None).dropna()
+        returns_dict[ticker] = s
+        lengths[ticker] = len(s)
 
-    """
-    Calculates daily returns for multiple stocks in a DataFrame.
-    Args:
-        data (pandas.DataFrame): DataFrame containing historical stock data for multiple tickers.
-    
-    Returns:
-        pandas.DataFrame: DataFrame containing daily returns for each ticker.
-    """
+    if not returns_dict:
+        return pd.DataFrame()
+
+    max_len = max(lengths.values())
+    min_len = int(max_len * keep_pct)
+
+    # keep only tickers with "enough" history
+    keep = [t for t, n in lengths.items() if n >= min_len]
+    returns_dict = {t: returns_dict[t] for t in keep}
+
+    # now align on common dates among the kept tickers
+    returns_df = pd.concat(returns_dict, axis=1, join="inner").sort_index()
+    return returns_df
+    '''
     returns = {}
 
     for ticker in data.keys():
@@ -70,8 +83,8 @@ def portfolio_returns(data:pd.DataFrame):
             #.dropna()
             .tolist()
         )
-
     return returns
+    '''
 
 
 
