@@ -66,11 +66,9 @@ def portfolio_returns(data: dict, keep_pct: float = 0.9) -> pd.DataFrame:
     max_len = max(lengths.values())
     min_len = int(max_len * keep_pct)
 
-    # keep only tickers with "enough" history
     keep = [t for t, n in lengths.items() if n >= min_len]
     returns_dict = {t: returns_dict[t] for t in keep}
 
-    # now align on common dates among the kept tickers
     returns_df = pd.concat(returns_dict, axis=1, join="inner").sort_index()
     return returns_df
     '''
