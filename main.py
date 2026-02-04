@@ -3,15 +3,21 @@
 import get_data as gt
 import efficient_frontier as ef
 import numpy as np
-
+import pandas as pd
 
 ### Testing functions ###
-data = gt.get_data(country='iceland', period='2y', interval='1d')
+data = gt.get_data(country='iceland', period='5y', interval='1d')
 returns = gt.portfolio_returns(data)
+yearly_returns = gt.cal_yearly_returns(returns)
 
+print(yearly_returns)
+
+
+
+'''
 for i in range(len(list(returns.keys()))):
-    print(len(returns[list(returns.keys())[i]]))
-
+    print(list(returns.keys())[i],len(returns[list(returns.keys())[i]]))
+'''
 
 
 ### main application logic would go here ###
