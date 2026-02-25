@@ -10,8 +10,8 @@ data = gt.get_data(country='iceland', period='5y', interval='1d')
 returns = gt.portfolio_returns(data)
 yearly_returns = gt.cal_yearly_returns(returns)
 
-print(yearly_returns)
-
+#print(yearly_returns)
+print(returns)
 
 
 '''

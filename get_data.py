@@ -1,6 +1,7 @@
 import pandas as pd
 import yfinance as yf
 import tickers as tk
+import numpy as np
 
 ### Main functions ###
 
@@ -56,9 +57,12 @@ def portfolio_returns(data: dict, keep_pct: float = 0.9) -> pd.DataFrame:
     lengths = {}
 
     for ticker, returns_data in data.items():
-        s = returns_data['Close'].pct_change(fill_method=None).dropna()
-        returns_dict[ticker] = s
-        lengths[ticker] = len(s)
+        #s = returns_data['Close'].pct_change(fill_method=None).dropna()
+        #returns_dict[ticker] = s
+        #lengths[ticker] = len(s)
+        s_log = np.log(returns_data['Close'] / returns_data['Close'].shift(1)).dropna()
+        returns_dict[ticker] = s_log
+        lengths[ticker] = len(s_log)
 
     if not returns_dict:
         return pd.DataFrame()
@@ -70,6 +74,7 @@ def portfolio_returns(data: dict, keep_pct: float = 0.9) -> pd.DataFrame:
     returns_dict = {t: returns_dict[t] for t in keep}
 
     returns_df = pd.concat(returns_dict, axis=1, join="inner").sort_index()
+
     return returns_df
     '''
     returns = {}
