@@ -39,22 +39,27 @@ def portfolio_risk(cov_matrix:pd.DataFrame, weights:pd.Series):
     
     return (1 / np.sqrt(weights.T @ cov_matrix @ weights))
 
-def expected_return(exp_returns:pd.Series, weights:pd.Series, cov_matrix:pd.DataFrame):
+def expected_return(returns:pd.Series, cov_matrix:pd.DataFrame):
     
     """
     Calculates the expected return of a portfolio given its weights and expected returns of assets.
     Args:
         exp_returns (pandas.Series): Expected returns of assets.
-        weights (pandas.Series): Portfolio weights for each asset.
         cov_matrix (pandas.DataFrame): Covariance matrix of asset returns.
     Returns:
         float: Expected return of the portfolio.
     """
 
     ones = np.ones(len(cov_matrix))
-    exp_returns = exp_returns @ np.linalg.inv(cov_matrix) @ ones / (ones.T @ np.linalg.inv(cov_matrix) @ ones)
+    exp_returns = returns.T @ np.linalg.inv(cov_matrix) @ ones / (ones.T @ np.linalg.inv(cov_matrix) @ ones)
 
     return exp_returns
+
+
+
+
+
+
 
 
 def portfolio_weights(cov_matrix:pd.DataFrame, exp_returns:pd.Series, target_return:float):
