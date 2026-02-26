@@ -18,20 +18,30 @@ def get_data(ticker=None,country=None, period="max", interval="1d"):
         pandas.DataFrame: DataFrame containing historical stock data.
     """
     if ticker is not None:
-        stock = yf.Ticker(ticker).history(period=period, interval=interval)
-        return stock
+            return yf.Ticker(ticker).history(
+                period=period,
+                interval=interval,
+                auto_adjust=False,   # <-- adjusts for splits + dividends
+                actions=True,       # optional; you usually don't need the columns then
+                repair=True
+            )
 
     elif country is not None:
         if country.upper() in tk.allowed_countries:
             tickers = getattr(tk, country.upper())
             data = {}
             for t in tickers:
-                data[t] = yf.Ticker(t).history(period=period, interval=interval)
+                data[t] = yf.Ticker(t).history(
+                    period=period,
+                    interval=interval,
+                    auto_adjust=False,
+                    actions=False
+                )
             return data
         else:
             raise ValueError("Country not supported.")
-    if not ticker and not country:
-        raise ValueError("Either ticker or country must be provided.")
+
+    raise ValueError("Either ticker or country must be provided.")
 
 
 def cal_yearly_returns(returns:pd.DataFrame):
@@ -56,7 +66,7 @@ def portfolio_returns(data: dict, keep_pct: float = 0.9) -> pd.DataFrame:
     lengths = {}
 
     for ticker, returns_data in data.items():
-        s = returns_data['Close'].pct_change(fill_method=None).dropna()
+        s = returns_data['Close'].ffill().pct_change(fill_method=None).dropna()
         returns_dict[ticker] = s
         lengths[ticker] = len(s)
 
