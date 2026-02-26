@@ -36,6 +36,7 @@ expected_return_of_min_var = yearly_returns.T @ min_var_weights
 std_of_min_var = 1/np.sqrt(denominator)
 print("Expected return:",expected_return_of_min_var)
 print("Standard deviation:", std_of_min_var)
+print(sum(min_var_weights))
 
 #mu = yearly_returns.loc[cov_inv.index].to_numpy().reshape(-1, 1)
 mu = yearly_returns.loc[cov_inv.index]
