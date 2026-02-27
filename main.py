@@ -31,7 +31,7 @@ min_var_weights = numerator / denominator
 #print(min_var_weights)
 #print("sum:", min_var_weights.sum())
 
-print(yearly_returns.T)
+print(min_var_weights)
 expected_return_of_min_var = yearly_returns.T @ min_var_weights
 std_of_min_var = 1/np.sqrt(denominator)
 print("Expected return:",expected_return_of_min_var)
