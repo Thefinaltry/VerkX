@@ -21,8 +21,8 @@ def get_data(ticker=None,country=None, period="max", interval="1d"):
             return yf.Ticker(ticker).history(
                 period=period,
                 interval=interval,
-                auto_adjust=False,   # <-- adjusts for splits + dividends
-                actions=True,       # optional; you usually don't need the columns then
+                auto_adjust=False,
+                actions=True,
                 repair=True
             )
 
