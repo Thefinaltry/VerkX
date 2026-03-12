@@ -19,7 +19,6 @@ def main():
 
     target_returns, stds, weights = ef.calculate_efficient_frontier(returns,yearly_returns)
 
-
     plt.figure(figsize=(8,5))
     plt.plot(stds, target_returns)
     plt.xlabel("Volatility")

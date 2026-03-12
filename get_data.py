@@ -66,7 +66,7 @@ def portfolio_returns(data: dict, keep_pct: float = 0.9) -> pd.DataFrame:
     lengths = {}
 
     for ticker, returns_data in data.items():
-        s = returns_data['Close'].ffill().pct_change(fill_method=None).dropna()
+        s = returns_data['Close'].interpolate(method='linear').pct_change(fill_method=None).dropna() #.ffill()
         returns_dict[ticker] = s
         lengths[ticker] = len(s)
 
