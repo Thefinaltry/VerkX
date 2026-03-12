@@ -20,7 +20,7 @@ def main():
     target_returns, stds, weights = ef.calculate_efficient_frontier(returns,yearly_returns)
 
     plt.figure(figsize=(8,5))
-    plt.plot(stds, target_returns)
+    plt.plot(stds, target_returns[0:len(stds)])
     plt.xlabel("Volatility")
     plt.ylabel("Expected Return")
     plt.title("Efficient Frontier (Íslenski markaðurinn)")

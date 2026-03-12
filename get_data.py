@@ -94,8 +94,6 @@ def portfolio_returns(data: dict, keep_pct: float = 0.9) -> pd.DataFrame:
     return returns
     '''
 
-
-
 ### possible later additions ###
 
 def portfolio_value(holdings:dict, stock_data:pd.DataFrame):
@@ -116,12 +114,6 @@ def portfolio_value(holdings:dict, stock_data:pd.DataFrame):
         else:
             raise ValueError(f"Ticker {ticker} not found in stock data.")
     return total_value
-
-
-
-
-
-
 
 ### Old code for reference ###
 
