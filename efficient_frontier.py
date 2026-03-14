@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from scipy.optimize import minimize
+import math
 
 
 ### Testing functions ###
@@ -15,13 +16,17 @@ def get_covariance_matrix(returns):
     )
     return cov_annual, cov_inv
 
-def calculate_min_var(returns:pd.DataFrame, yearly_returns:pd.DataFrame, bounded: bool = True, bound: float = 0.15):
+def calculate_min_var(returns:pd.DataFrame, yearly_returns:pd.DataFrame, bounded: bool = True, short_bound: float = 0.15, long_bound: float = 0.15):
     cov_annual, cov_inv = get_covariance_matrix(returns)
     if bounded:
         mu = yearly_returns.loc[cov_annual.index]
         n = len(mu)
         x0 = np.ones(n) / n
-        bounds = [(-bound, bound)] * n
+
+        if short_bound == None:
+            bounds = [(short_bound, long_bound)] * n
+        else:
+            bounds = [(-short_bound, long_bound)] * n
         constraints = [
             {"type": "eq", "fun": lambda w: np.sum(w) - 1.0}
         ]
@@ -48,11 +53,11 @@ def calculate_min_var(returns:pd.DataFrame, yearly_returns:pd.DataFrame, bounded
         std_of_min_var = 1/np.sqrt(denominator)
         return [min_var_weights, expected_return_of_min_var, std_of_min_var]
 
-def bounded_portfolio_weights(cov_annual: pd.DataFrame, mu: pd.Series, target_return: float, bound: float = 0.15, x0=None) -> pd.Series:
+def bounded_portfolio_weights(cov_annual: pd.DataFrame, mu: pd.Series, target_return: float, short_bound: float = 0.15, long_bound: float = 0.15, x0=None) -> pd.Series:
     n = len(mu)
     if x0 is None:
         x0 = np.ones(n) / n
-    bounds = [(-bound, bound)] * n
+    bounds = [(-short_bound, long_bound)] * n
     constraints = [
         {"type": "eq", "fun": lambda w: np.sum(w) - 1.0},
         {"type": "eq", "fun": lambda w: mu.values @ w - target_return},
@@ -66,9 +71,9 @@ def bounded_portfolio_weights(cov_annual: pd.DataFrame, mu: pd.Series, target_re
 
     return pd.Series(result.x, index=mu.index)
 
-def calculate_efficient_frontier(returns:pd.DataFrame,yearly_returns:pd.DataFrame, bounded: bool = True, bound: float = 0.15):
+def calculate_efficient_frontier(returns:pd.DataFrame,yearly_returns:pd.DataFrame, bounded: bool = True, short_bound: float = 0.15, long_bound: float = 0.15):
     cov_annual, cov_inv = get_covariance_matrix(returns)
-    min_var_weights, expected_return_of_min_var, _ = calculate_min_var(returns, yearly_returns, bounded, bound)
+    min_var_weights, expected_return_of_min_var, _ = calculate_min_var(returns, yearly_returns, bounded, short_bound, long_bound)
 
     #print(min_var_weights)
     ones = pd.Series(1.0, index=cov_inv.index)
@@ -83,7 +88,7 @@ def calculate_efficient_frontier(returns:pd.DataFrame,yearly_returns:pd.DataFram
 
     for i in target_returns:
         if bounded:
-            w = bounded_portfolio_weights(cov_annual, mu, i, bound, x0)
+            w = bounded_portfolio_weights(cov_annual, mu, i, short_bound, long_bound, x0)
         else:
             w = ((i * ((cov_inv @ mu * (denominator))-((cov_inv @ ones) * (ones.T @ cov_inv @ mu)))) + ((cov_inv @ ones) * (mu.T @ cov_inv @ mu)) - ((cov_inv @ mu) * (mu.T @ cov_inv @ ones)))/((denominator * (mu.T @ cov_inv @ mu))-((ones.T @ cov_inv @ mu) * (mu.T @ cov_inv @ ones)))
         if w is None:
@@ -95,3 +100,19 @@ def calculate_efficient_frontier(returns:pd.DataFrame,yearly_returns:pd.DataFram
         stds.append(std)
         x0 = w.values
     return target_returns, stds, weights
+
+def return_of_min_var(returns: pd.DataFrame, period: int, ef_period: int, min_var_weights: pd.Series):
+    first = returns.index.min()
+    start_date = first + pd.DateOffset(years=ef_period)
+    start_date = returns.index[returns.index >= start_date][0]
+
+    end_date = returns.index.max()
+
+    period_returns = returns.loc[start_date:end_date]
+    #period_returns.to_csv('period_returns.csv')
+    total_returns = (1 + period_returns).prod() - 1
+
+    min_var_return = total_returns @ min_var_weights
+    annual_return_of_min_var = math.exp((math.log(min_var_return+1))/(period-ef_period))-1
+
+    return annual_return_of_min_var, first, start_date, end_date

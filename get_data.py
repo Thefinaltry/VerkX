@@ -32,11 +32,11 @@ def get_data(ticker=None,country=None, period="max", interval="1d"):
             data = {}
             for t in tickers:
                 data[t] = yf.Ticker(t).history(
-                    period=period,
-                    interval=interval,
-                    auto_adjust=False,
-                    actions=False
-                )
+                        period=period,
+                        interval=interval,
+                        auto_adjust=False,
+                        actions=False
+                    )      
             return data
         else:
             raise ValueError("Country not supported.")
@@ -61,7 +61,7 @@ def cal_yearly_returns(returns:pd.DataFrame):
 
     return total_return ** (252 / total_days) - 1
 
-def portfolio_returns(data: dict, keep_pct: float = 0.9) -> pd.DataFrame:
+def get_returns(data: dict, keep_pct: float = 0.9, slice_output: bool = False, ef_period: int = 0) -> pd.DataFrame:
     returns_dict = {}
     lengths = {}
 
@@ -80,7 +80,15 @@ def portfolio_returns(data: dict, keep_pct: float = 0.9) -> pd.DataFrame:
     returns_dict = {t: returns_dict[t] for t in keep}
 
     returns_df = pd.concat(returns_dict, axis=1, join="inner").sort_index()
-    return returns_df
+
+    if slice_output:
+        start = returns_df.index.min()
+        end = start + pd.DateOffset(years=ef_period)
+        returns_df_efficient_frontier = returns_df.loc[start:end]
+    else:
+        returns_df_efficient_frontier = None
+
+    return returns_df, returns_df_efficient_frontier
     '''
     returns = {}
 
