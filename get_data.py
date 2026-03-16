@@ -1,8 +1,75 @@
 import pandas as pd
 import yfinance as yf
 import tickers as tk
+import numpy as np
 
 ### Main functions ###
+def get_data_chat(ticker=None, country=None, period="max", interval="1d"):
+    """
+    Fetches (adjusted) price data for a given ticker symbol using yfinance,
+    or multiple tickers from tickers.py.
+
+    Returns:
+        pd.DataFrame: price matrix with index=Date and columns=tickers.
+                      Uses "Adj Close" when available (dividends + splits),
+                      otherwise falls back to "Close".
+    """
+
+    if ticker is not None:
+        tickers = [ticker]
+
+        df = yf.download(
+            tickers,
+            period=period,
+            interval=interval,
+            threads=True,
+            progress=False,
+            auto_adjust=False
+        )
+
+        if df.empty:
+            raise ValueError("No data returned in tickers, may be ticker / interval / period.")
+
+        # prefer total-return series when available
+        col = "Adj Close" if "Adj Close" in df.columns else "Close"
+        close_price = df[[col]].rename(columns={col: ticker})
+
+        close_price.columns.name = None
+        return close_price.dropna()
+
+    elif country is not None:
+        if country.upper() not in tk.allowed_countries:
+            raise ValueError("Country not supported.")
+
+        tickers = list(getattr(tk, country.upper()))
+
+        df = yf.download(
+            tickers,
+            period=period,
+            interval=interval,
+            threads=True,
+            progress=False,
+            auto_adjust=False
+        )
+
+        if df.empty:
+            raise ValueError("No data returned in tickers, may be tickers / interval / period.")
+
+        # If only one ticker, columns are single-level
+        if len(tickers) == 1:
+            col = "Adj Close" if "Adj Close" in df.columns else "Close"
+            close_prices = df[[col]].rename(columns={col: tickers[0]})
+        else:
+            # MultiIndex columns: (field, ticker)
+            field = "Adj Close" if "Adj Close" in df.columns.get_level_values(0) else "Close"
+            close_prices = df[field]
+
+        close_prices.columns.name = None
+        close_prices = close_prices.dropna(axis=1, how="all")
+        return close_prices.dropna(how="all")
+
+    else:
+        raise ValueError("Either ticker or country must be provided.")
 
 def get_data(ticker=None,country=None, period="max", interval="1d"):
 
@@ -17,6 +84,7 @@ def get_data(ticker=None,country=None, period="max", interval="1d"):
     Returns:
         pandas.DataFrame: DataFrame containing historical stock data.
     """
+
     if ticker is not None:
             return yf.Ticker(ticker).history(
                 period=period,
@@ -43,11 +111,47 @@ def get_data(ticker=None,country=None, period="max", interval="1d"):
 
     raise ValueError("Either ticker or country must be provided.")
 
+def cagr_over_available(prices: pd.DataFrame, periods_per_year: int = 252, min_periods: int = 60) -> pd.Series:
+    """
+    Annualized return (CAGR) computed over each ticker's available history
+    within the provided prices DataFrame.
+
+    For each ticker, uses first and last non-NaN prices in the window.
+    Returns r such that: start * (1+r)^(years_used) = end
+
+    Args:
+        prices: DataFrame of prices (index=dates, columns=tickers)
+        periods_per_year: 252 for daily, ~52 for weekly
+        min_periods: minimum number of price observations required to compute a CAGR
+
+    Returns:
+        Series of annualized returns (float) per ticker.
+    """
+    out = {}
+
+    for t in prices.columns:
+        s = prices[t].dropna()
+        if len(s) < min_periods:
+            continue  # skip too-short histories
+
+        start = s.iloc[0]
+        end = s.iloc[-1]
+        periods = len(s) - 1
+        years_used = periods / periods_per_year
+
+        if years_used <= 0 or start <= 0 or end <= 0:
+            continue
+
+        out[t] = (end / start) ** (1 / years_used) - 1
+
+    return pd.Series(out, name="cagr").sort_values(ascending=False)
+def years_available(prices: pd.DataFrame, periods_per_year: int = 252) -> pd.Series:
+    return (prices.notna().sum() - 1) / periods_per_year
 
 def cal_yearly_returns(returns:pd.DataFrame):
 
     """
-    Calculates daily returns from stock data.
+    Calculates yearly returns from stock data.
     Args:
         stock_data (pandas.DataFrame): DataFrame containing historical stock data.
     
