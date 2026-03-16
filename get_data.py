@@ -86,36 +86,30 @@ def get_data(ticker=None,country=None, period="max", interval="1d"):
     """
 
     if ticker is not None:
-        tickers = [ticker]
-
-        df = yf.download(tickers, period=period, interval=interval,threads=True, progress=False, auto_adjust= True)
-    
-        if df.empty:
-            raise ValueError("No data returned in ticers, may be / interval / period.")
-        
-        close_price = df[["Close"]].rename(columns={"Close": ticker})
-        return close_price.dropna()
+            return yf.Ticker(ticker).history(
+                period=period,
+                interval=interval,
+                auto_adjust=False,
+                actions=True,
+                repair=True
+            )
 
     elif country is not None:
-        if country.upper() not in tk.allowed_countries:
-            raise ValueError("Country not supported.")
-        
-        tickers = list(getattr(tk, country.upper()))
-        df = yf.download(tickers, period=period,interval=interval,threads = True, progress = False, auto_adjust = True)
-        
-        if df.empty:
-            raise ValueError("No data returned in tickers, may be / interval / period.")
-        
-        if len(tickers) == 1:
-            close_prices = df[["Close"]].rename(columns={"Close": tickers[0]})
-
+        if country.upper() in tk.allowed_countries:
+            tickers = getattr(tk, country.upper())
+            data = {}
+            for t in tickers:
+                data[t] = yf.Ticker(t).history(
+                        period=period,
+                        interval=interval,
+                        auto_adjust=False,
+                        actions=False
+                    )      
+            return data
         else:
-            close_prices = df["Close"]
-        
-        close_prices = close_prices.dropna(axis=1, how="all")
-        return close_prices.dropna(how="all")
-    else:
-        raise ValueError("Either ticker or country must be provided.")
+            raise ValueError("Country not supported.")
+
+    raise ValueError("Either ticker or country must be provided.")
 
 def cagr_over_available(prices: pd.DataFrame, periods_per_year: int = 252, min_periods: int = 60) -> pd.Series:
     """
@@ -171,17 +165,14 @@ def cal_yearly_returns(returns:pd.DataFrame):
 
     return total_return ** (252 / total_days) - 1
 
-def portfolio_returns(data: dict, keep_pct: float = 0.9) -> pd.DataFrame:
+def get_returns(data: dict, keep_pct: float = 0.9, slice_output: bool = False, ef_period: int = 0) -> pd.DataFrame:
     returns_dict = {}
     lengths = {}
 
     for ticker, returns_data in data.items():
-        #s = returns_data['Close'].pct_change(fill_method=None).dropna()
-        #returns_dict[ticker] = s
-        #lengths[ticker] = len(s)
-        s_log = np.log(returns_data['Close'] / returns_data['Close'].shift(1)).dropna()
-        returns_dict[ticker] = s_log
-        lengths[ticker] = len(s_log)
+        s = returns_data['Close'].interpolate(method='linear').pct_change(fill_method=None).dropna() #.ffill()
+        returns_dict[ticker] = s
+        lengths[ticker] = len(s)
 
     if not returns_dict:
         return pd.DataFrame()
@@ -194,7 +185,14 @@ def portfolio_returns(data: dict, keep_pct: float = 0.9) -> pd.DataFrame:
 
     returns_df = pd.concat(returns_dict, axis=1, join="inner").sort_index()
 
-    return returns_df
+    if slice_output:
+        start = returns_df.index.min()
+        end = start + pd.DateOffset(years=ef_period)
+        returns_df_efficient_frontier = returns_df.loc[start:end]
+    else:
+        returns_df_efficient_frontier = None
+
+    return returns_df, returns_df_efficient_frontier
     '''
     returns = {}
 
@@ -207,8 +205,6 @@ def portfolio_returns(data: dict, keep_pct: float = 0.9) -> pd.DataFrame:
         )
     return returns
     '''
-
-
 
 ### possible later additions ###
 
@@ -230,12 +226,6 @@ def portfolio_value(holdings:dict, stock_data:pd.DataFrame):
         else:
             raise ValueError(f"Ticker {ticker} not found in stock data.")
     return total_value
-
-
-
-
-
-
 
 ### Old code for reference ###
 
