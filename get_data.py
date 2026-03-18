@@ -3,6 +3,7 @@ import yfinance as yf
 import tickers as tk
 import numpy as np
 
+
 ### Main functions ###
 def get_data_chat(ticker=None, country=None, period="max", interval="1d"):
     """
@@ -111,6 +112,7 @@ def get_data(ticker=None,country=None, period="max", interval="1d"):
 
     raise ValueError("Either ticker or country must be provided.")
 
+
 def cagr_over_available(prices: pd.DataFrame, periods_per_year: int = 252, min_periods: int = 60) -> pd.Series:
     """
     Annualized return (CAGR) computed over each ticker's available history
@@ -165,7 +167,11 @@ def cal_yearly_returns(returns:pd.DataFrame):
 
     return total_return ** (252 / total_days) - 1
 
+<<<<<<< Updated upstream
 def get_returns(data: dict, keep_pct: float = 0.9, slice_output: bool = False, ef_period: int = 0) -> pd.DataFrame:
+=======
+def portfolio_returns(data: pd.DataFrame, keep_pct: float = 0.9) -> pd.DataFrame:
+>>>>>>> Stashed changes
     returns_dict = {}
     lengths = {}
 
@@ -185,6 +191,7 @@ def get_returns(data: dict, keep_pct: float = 0.9, slice_output: bool = False, e
 
     returns_df = pd.concat(returns_dict, axis=1, join="inner").sort_index()
 
+<<<<<<< Updated upstream
     if slice_output:
         start = returns_df.index.min()
         end = start + pd.DateOffset(years=ef_period)
@@ -194,6 +201,10 @@ def get_returns(data: dict, keep_pct: float = 0.9, slice_output: bool = False, e
 
     return returns_df, returns_df_efficient_frontier
     '''
+=======
+    return returns_df
+    
+>>>>>>> Stashed changes
     returns = {}
 
     for ticker in data.keys():
@@ -204,7 +215,7 @@ def get_returns(data: dict, keep_pct: float = 0.9, slice_output: bool = False, e
             .tolist()
         )
     return returns
-    '''
+
 
 ### possible later additions ###
 
@@ -229,7 +240,7 @@ def portfolio_value(holdings:dict, stock_data:pd.DataFrame):
 
 ### Old code for reference ###
 
-'''
+
 def get_data(ticker=None,country=None, period="max", interval="1d"):
 
     """
@@ -256,4 +267,4 @@ def get_data(ticker=None,country=None, period="max", interval="1d"):
             raise ValueError("Country not supported.")
     if not ticker and not country:
         raise ValueError("Either ticker or country must be provided.")
-'''
+    

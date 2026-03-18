@@ -11,7 +11,7 @@ print(cagr)
 print("\nYears used (approx):")
 print(yrs[cagr.index].round(2))
 
-s = prices["REITIR.IC"].dropna()
+s = prices["ARION.IC"].dropna()
 
 print("Start date:", s.index[0])
 print("End date:", s.index[-1])
