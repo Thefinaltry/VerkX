@@ -105,6 +105,7 @@ def return_of_min_var(returns: pd.DataFrame, period: int, ef_period: int, min_va
     first = returns.index.min()
     start_date = first + pd.DateOffset(years=ef_period)
     start_date = returns.index[returns.index >= start_date][0]
+    start_date = start_date + pd.Timedelta(days=1)
 
     end_date = returns.index.max()
 
