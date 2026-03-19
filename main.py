@@ -4,12 +4,13 @@ import get_data as gt
 import efficient_frontier as ef
 import rebalance as rb
 import rebalance_updated as rbu
+import UI_demo as ui
 import numpy as np
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import math
 import warnings
+import math
 
 pd.options.display.float_format = '{:.6f}'.format
 
@@ -134,10 +135,10 @@ def menu():
 
 def main():
     while True:
-        choice = menu()
+        choice = ui.menu()
 
         if choice == 1:
-            period, _, short_bound, long_bound = fetch_from_user()
+            period, _, short_bound, long_bound = ui.fetch_from_user()
             period_string = str(period)+'y'
             data = gt.get_data(country='iceland', period=period_string, interval='1d')
             returns,_ = gt.get_returns(data)
@@ -155,7 +156,7 @@ def main():
             plt.show()
 
         if choice == 2:
-            period, _, short_bound, long_bound = fetch_from_user()
+            period, _, short_bound, long_bound = ui.fetch_from_user()
             period_string = str(period)+'y'
             data = gt.get_data(country='iceland', period=period_string, interval='1d')
             returns,_ = gt.get_returns(data)
@@ -172,7 +173,7 @@ def main():
 
         if choice == 3:
         ### Testing functions ###
-            period, ef_period, short_bound, long_bound = fetch_from_user(True)
+            period, ef_period, short_bound, long_bound = ui.fetch_from_user(True)
             period_string = str(period)+'y'
 
             data = gt.get_data(country='iceland', period=period_string, interval='1d')
