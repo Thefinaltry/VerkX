@@ -2,6 +2,7 @@
 
 import get_data as gt
 import efficient_frontier as ef
+import rebalance as rb
 import numpy as np
 import pandas as pd
 import numpy as np
@@ -104,11 +105,12 @@ def menu():
         print("1. Plot efficient frontier")
         print("2. Calculate minimum variance portfolio")
         print("3. Test minimum variance porftolio performance")
-        print("4. exit")
+        print("4. Test rebalancing strategy")
+        print("5. exit")
 
-        choice = input("Choose an option (1-4): ")
+        choice = input("Choose an option (1-5): ")
 
-        if choice in ["1", "2", "3", "4"]:
+        if choice in ["1", "2", "3", "4", "5"]:
             return int(choice)
         else:
             print("Invalid choice. Please select a number between 1 and 4.")
@@ -180,6 +182,23 @@ def main():
             print()
         
         if choice == 4:
+            period, ef_period, short_bound, long_bound = fetch_from_user(True)
+            period_string = str(period)+'y'
+
+            data = gt.get_data(country='iceland', period=period_string, interval='1d')
+            returns,ef_returns = gt.get_returns(data,keep_pct=0.9,slice_output=True,ef_period=ef_period)
+            yearly_returns_ef = gt.cal_yearly_returns(ef_returns)
+            print(returns.index.min())
+            starting_date = returns.index.min() + pd.DateOffset(years=ef_period)
+            starting_date = returns.index[returns.index > starting_date][0]
+            end_date = returns.index.max()
+            
+            if short_bound != None or long_bound != None:
+                rb.rebalance_through_time(returns, starting_date, 1, True, short_bound, long_bound)
+            else:
+                rb.rebalance_through_time(returns, starting_date, 1, False)
+
+        if choice == 5:
             break
         
 
