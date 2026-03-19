@@ -3,6 +3,7 @@
 import get_data as gt
 import efficient_frontier as ef
 import rebalance as rb
+import rebalance_updated as rbu
 import numpy as np
 import pandas as pd
 import numpy as np
@@ -20,7 +21,7 @@ warnings.filterwarnings(
 
 ### main application logic would go here ###
 
-def fetch_from_user(slice_output: bool = False):
+def fetch_from_user(slice_output: bool = False, rebalance: bool = False):
     period = 0
     efficient_frontier_period = 0
     short_bound = None
@@ -63,7 +64,7 @@ def fetch_from_user(slice_output: bool = False):
                     try:
                         short_bound = input("How large can SHORT positions get (%)?: ")
                         if short_bound.lower() in ["inf", 'infinite', 'max', 'unbound']:
-                            short_bound == None
+                            short_bound = None
                         else:    
                             short_bound = int(short_bound)
                             if short_bound <= 0:
@@ -72,7 +73,7 @@ def fetch_from_user(slice_output: bool = False):
                             try:
                                 long_bound = input("How large can LONG positions get (%)?: ")
                                 if long_bound.lower() in ["inf", 'infinite', 'max', 'unbound']:
-                                    long_bound == None
+                                    long_bound = None
                                 else:    
                                     long_bound = int(long_bound)
                                     if long_bound <= 0:
@@ -92,12 +93,27 @@ def fetch_from_user(slice_output: bool = False):
             print("Invalid input... Please enter y or n (yes or no)")
             print()
     
-    if short_bound != None:
+    if rebalance:
+        while True:
+            try:
+                frequency = int(input('How often to rebalance? (days): '))
+                
+                if 1 <= frequency <= (period - efficient_frontier_period)*252*0.5:
+                    break
+                else:
+                    print(f"Invalid amount of days... Must be a number between 1-{(period - efficient_frontier_period)*252*0.5} days (maximum half the entire period)")
+            except ValueError:
+                print("Invalid input... Please enter an integer.")
+    
+    if short_bound is not None:
         short_bound = float(short_bound)/100
-    if short_bound != None:
+    if long_bound is not None:
         long_bound = float(long_bound)/100
 
-    return period, efficient_frontier_period, short_bound, long_bound
+    if rebalance:
+        return period, efficient_frontier_period, short_bound, long_bound, frequency
+    else:
+        return period, efficient_frontier_period, short_bound, long_bound
 
 def menu():
     while True:
@@ -182,21 +198,39 @@ def main():
             print()
         
         if choice == 4:
-            period, ef_period, short_bound, long_bound = fetch_from_user(True)
+            period, ef_period, short_bound, long_bound, frequency = fetch_from_user(True, True)
             period_string = str(period)+'y'
 
             data = gt.get_data(country='iceland', period=period_string, interval='1d')
             returns,ef_returns = gt.get_returns(data,keep_pct=0.9,slice_output=True,ef_period=ef_period)
             yearly_returns_ef = gt.cal_yearly_returns(ef_returns)
-            print(returns.index.min())
+            if short_bound != None or long_bound != None:
+                min_var_weights, expected_return_of_min_var, std_of_min_var = ef.calculate_min_var(ef_returns,yearly_returns_ef,True,short_bound,long_bound)
+            else:
+                min_var_weights, expected_return_of_min_var, std_of_min_var = ef.calculate_min_var(ef_returns,yearly_returns_ef,False)
+
             starting_date = returns.index.min() + pd.DateOffset(years=ef_period)
             starting_date = returns.index[returns.index > starting_date][0]
             end_date = returns.index.max()
             
             if short_bound != None or long_bound != None:
-                rb.rebalance_through_time(returns, starting_date, 1, True, short_bound, long_bound)
+                list_of_expected_returns, list_of_stds, list_of_weights, list_of_portfolio_values, list_of_period_returns, list_of_turnover, list_of_fee_costs = rb.rebalance_through_time(min_var_weights, returns, starting_date, ef_period, frequency, True, short_bound, long_bound)
             else:
-                rb.rebalance_through_time(returns, starting_date, 1, False)
+                list_of_expected_returns, list_of_stds, list_of_weights, list_of_portfolio_values, list_of_period_returns, list_of_turnover, list_of_fee_costs = rb.rebalance_through_time(min_var_weights, returns, starting_date, ef_period, frequency, False)
+
+            total_return = list_of_portfolio_values[-1] / list_of_portfolio_values[0] - 1
+            annual_return_of_portfolio = math.exp((math.log(total_return+1))/(period-ef_period))-1
+
+            print(f"Total return: {total_return*100:.2f}%")
+            print(f"Annualized return: {annual_return_of_portfolio*100:.2f}%")
+            print(f"Total trading fees paid: {sum(list_of_fee_costs)*100:.2f}%")
+
+            #rb.trace_path(list_of_expected_returns, list_of_stds)
+
+            history = rbu.rebalance_through_time(min_var_weights, returns, starting_date, ef_period, frequency, short_bound is not None or long_bound is not None, short_bound, long_bound)
+            #rbu.plot_rebalance_snapshot(history, step=-1)   # latest snapshot
+            #rbu.plot_frontier_gap(history)                  # time-series of drift from frontier
+            anim = rbu.animate_rebalancing(history)
 
         if choice == 5:
             break

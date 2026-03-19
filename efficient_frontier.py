@@ -71,7 +71,7 @@ def bounded_portfolio_weights(cov_annual: pd.DataFrame, mu: pd.Series, target_re
 
     return pd.Series(result.x, index=mu.index)
 
-def calculate_efficient_frontier(returns:pd.DataFrame,yearly_returns:pd.DataFrame, bounded: bool = True, short_bound: float = 0.15, long_bound: float = 0.15):
+def calculate_efficient_frontier(returns:pd.DataFrame,yearly_returns:pd.DataFrame, bounded: bool = True, short_bound: float = None, long_bound: float = None):
     cov_annual, cov_inv = get_covariance_matrix(returns)
     min_var_weights, expected_return_of_min_var, _ = calculate_min_var(returns, yearly_returns, bounded, short_bound, long_bound)
 
@@ -80,7 +80,9 @@ def calculate_efficient_frontier(returns:pd.DataFrame,yearly_returns:pd.DataFram
     mu = yearly_returns.loc[cov_inv.index]
     denominator = ones.T @ cov_inv @ ones
 
-    target_returns = np.arange(float(expected_return_of_min_var), 0.50 + 1e-12, 0.0025)
+    start = float(expected_return_of_min_var)
+    end = start + 0.5
+    target_returns = np.arange(start, end + 1e-12, 0.0025)
     stds = []
     weights = []
 
