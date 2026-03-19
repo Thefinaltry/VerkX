@@ -3,6 +3,20 @@ import efficient_frontier as ef
 import get_data as gt
 
 def rebalance_through_time(returns:pd.DataFrame, current_date: pd.Timestamp, offset: int, bounded: bool = False, short_bound: float=0.15, long_bound: float=0.15):
+
+    """
+    Rebalance the portfolio through time by calculating the minimum variance portfolio at regular intervals and moving forward by 6 months.
+    Parameters:
+    returns (pd.DataFrame): A DataFrame of daily returns for each asset.
+    current_date (pd.Timestamp): The starting date for rebalancing.
+    offset (int): The number of years to look back for calculating the efficient frontier.
+    bounded (bool): Whether to use bounded optimization for the minimum variance portfolio (default is False).
+    short_bound (float): The upper bound for short positions if bounded optimization is used (default is 0.15).
+    long_bound (float): The upper bound for long positions if bounded optimization is used (default is 0.15).
+    Returns:
+    None: This function does not return anything, but it prints the current date at each rebalancing step.
+    """
+
     end_date = returns.index.max()
     
     while current_date <= end_date:

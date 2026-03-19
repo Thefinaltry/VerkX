@@ -4,8 +4,6 @@ import tickers as tk
 import numpy as np
 
 
-### Main functions ###
-
 def get_data(ticker=None,country=None, period="max", interval="1d"):
 
     """
