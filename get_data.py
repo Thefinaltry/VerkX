@@ -83,6 +83,7 @@ def get_returns(data: dict, keep_pct: float = 0.9, slice_output: bool = False, e
     returns_dict = {t: returns_dict[t] for t in keep}
 
     returns_df = pd.concat(returns_dict, axis=1, join="inner").sort_index()
+    returns_df.to_csv('returns.csv')
 
     if slice_output:
         start = returns_df.index.min()
@@ -104,6 +105,33 @@ def get_returns(data: dict, keep_pct: float = 0.9, slice_output: bool = False, e
         )
     return returns
     '''
+def get_data_between_dates(ticker: str, start_date, end_date, interval: str = "1d"):
+    start_date = pd.Timestamp(start_date)
+    end_date = pd.Timestamp(end_date)
+
+    data = yf.Ticker(ticker).history(
+        start=start_date,
+        end=end_date + pd.Timedelta(days=1),
+        interval=interval,
+        auto_adjust=False,
+        actions=True,
+        repair=True
+    )
+
+    return data
+
+
+def get_index(start_date,end_date,ticker: str = "^OMXI15"):
+    data = get_data_between_dates(ticker=ticker, start_date=start_date, end_date=end_date)
+    returns = data["Close"].interpolate(method="linear").pct_change(fill_method=None).dropna()
+
+    expected_return = cal_yearly_returns(returns.to_frame("index"))
+    expected_return = float(expected_return.iloc[0])
+
+    std = float(returns.std() * np.sqrt(252))
+
+    return expected_return, std
+
 
 ### Old code for reference ###
 

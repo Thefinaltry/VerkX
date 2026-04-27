@@ -19,11 +19,19 @@ def get_covariance_matrix(returns):
 
     cov_matrix = returns.cov()
     cov_annual = cov_matrix * 252
+
+    try:
+        cov_inv_array = np.linalg.inv(cov_annual.values)
+    except np.linalg.LinAlgError:
+        #print("Warning: covariance matrix is singular, using pseudo-inverse instead.")
+        cov_inv_array = np.linalg.pinv(cov_annual.values)
+
     cov_inv = pd.DataFrame(
-        np.linalg.inv(cov_annual.values),
+        cov_inv_array,
         index=cov_annual.index,
         columns=cov_annual.columns
     )
+
     return cov_annual, cov_inv
 
 def calculate_min_var(returns:pd.DataFrame, yearly_returns:pd.DataFrame, bounded: bool = True, short_bound: float = 0.15, long_bound: float = 0.15):
@@ -40,8 +48,8 @@ def calculate_min_var(returns:pd.DataFrame, yearly_returns:pd.DataFrame, bounded
     list: A list containing the minimum variance portfolio weights, expected return, and standard deviation.
     """
 
-    cov_annual, cov_inv = get_covariance_matrix(returns)
     if bounded:
+        cov_annual, _ = get_covariance_matrix(returns)
         mu = yearly_returns.loc[cov_annual.index]
         n = len(mu)
         x0 = np.ones(n) / n
@@ -66,6 +74,7 @@ def calculate_min_var(returns:pd.DataFrame, yearly_returns:pd.DataFrame, bounded
         std_of_min_var = np.sqrt(result.x @ cov_annual.values @ result.x)
         return [min_var_weights, expected_return_of_min_var, std_of_min_var]
     else:
+        cov_annual, cov_inv = get_covariance_matrix(returns)
         ones = pd.Series(1.0, index=cov_inv.index)
         numerator = cov_inv @ ones
         denominator = ones.T @ cov_inv @ ones
@@ -100,7 +109,7 @@ def bounded_portfolio_weights(cov_annual: pd.DataFrame, mu: pd.Series, target_re
         {"type": "eq", "fun": lambda w: mu.values @ w - target_return},
     ]
 
-    result = minimize(fun=lambda w: w @ cov_annual.values @ w, x0=x0, method="SLSQP", bounds=bounds, constraints=constraints, options={"maxiter": 2000, "ftol": 1e-9})
+    result = minimize(fun=lambda w: w @ cov_annual.values @ w, x0=x0, method="SLSQP", bounds=bounds, constraints=constraints, options={"maxiter": 500, "ftol": 1e-6})
 
     if not result.success:
         return None
