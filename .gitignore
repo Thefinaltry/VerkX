@@ -1,0 +1,8 @@
+# __pycache__
+__pycache__/**/*
+# .venv
+.venv/**/*
+# .vscode
+.vscode/**/*
+# iceland_price.csv
+iceland_price.csv
