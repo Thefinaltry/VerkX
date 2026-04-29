@@ -83,7 +83,7 @@ def get_returns(data: dict, keep_pct: float = 0.9, slice_output: bool = False, e
     returns_dict = {t: returns_dict[t] for t in keep}
 
     returns_df = pd.concat(returns_dict, axis=1, join="inner").sort_index()
-    returns_df.to_csv('returns.csv')
+    #returns_df.to_csv('returns.csv')
 
     if slice_output:
         start = returns_df.index.min()
