@@ -331,7 +331,7 @@ def main():
         choice = menu()
 
         if choice == 1:
-            period, _, short_bound, long_bound = ui.fetch_from_user()
+            period, _, short_bound, long_bound = fetch_from_user()
             period_string = str(period)+'y'
             data = gt.get_data(country='iceland', period=period_string, interval='1d')
             returns,_ = gt.get_returns(data)
@@ -349,7 +349,7 @@ def main():
             plt.show()
 
         if choice == 2:
-            period, _, short_bound, long_bound = ui.fetch_from_user()
+            period, _, short_bound, long_bound = fetch_from_user()
             period_string = str(period)+'y'
             data = gt.get_data(country='iceland', period=period_string, interval='1d')
             returns,_ = gt.get_returns(data)
@@ -366,7 +366,7 @@ def main():
 
         if choice == 3:
         ### Testing functions ###
-            period, ef_period, short_bound, long_bound = ui.fetch_from_user(True)
+            period, ef_period, short_bound, long_bound = fetch_from_user(True)
             period_string = str(period)+'y'
 
             data = gt.get_data(country='iceland', period=period_string, interval='1d')
@@ -393,9 +393,12 @@ def main():
         
         if choice == 4:
             period, ef_period, short_bound, long_bound, frequency, risk, rebalance_distance, display_graph = fetch_from_user(True, True)
+            period_string = str(period)+'y'
             data = gt.get_data(country='iceland', period=period_string, interval='1d')
             returns,ef_returns = gt.get_returns(data,keep_pct=0.9,slice_output=True,ef_period=ef_period)
             yearly_returns_ef = gt.cal_yearly_returns(ef_returns)
+            return_list = []
+            parameter_list = []
 
             #if risk == 1:
             starting_date = returns.index.min() + pd.DateOffset(years=ef_period)
@@ -451,21 +454,25 @@ def main():
             #period, ef_period, short_bound, long_bound, frequency, risk, rebalance_distance, display_graph = fetch_from_user(True, True)
             return_list = []
             parameter_list = []
-            one_over_n_difference_list = []
+            strategy_return_list = []
             no_rebalance_difference_list = []
             period = 10
             period_string = str(period)+'y'
             ef_period = 2
             short_bound = None
             long_bound = None
-            frequency_list = [i for i in range(30,180+1,30)]
-            risk = 4
-            rebalance_distance_list = ['inf',0,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,0.10]
+            frequency_list = [i for i in range(1,1080+1,1)]
+            risk = 6
+            rebalance_distance_list = ['inf',0] #0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,0.10
             display_graph = False
 
             counter = 0
             nr_of_runs = ((len(rebalance_distance_list)-1)*len(frequency_list))+1
             _,annualized_return_of_one_over_n = simulate_one_over_n(simulation_period=(period-ef_period),period=period,ask_for_input=False)
+
+            data = gt.get_data(country='iceland', period=period_string, interval='1d')
+            returns,ef_returns = gt.get_returns(data,keep_pct=0.9,slice_output=True,ef_period=ef_period)
+            yearly_returns_ef = gt.cal_yearly_returns(ef_returns)
 
             for j in frequency_list:
                 frequency = j
@@ -476,9 +483,6 @@ def main():
                             continue
                     else:
                         rebalance_distance = i*100
-                    data = gt.get_data(country='iceland', period=period_string, interval='1d')
-                    returns,ef_returns = gt.get_returns(data,keep_pct=0.9,slice_output=True,ef_period=ef_period)
-                    yearly_returns_ef = gt.cal_yearly_returns(ef_returns)
 
                     #if risk == 1:
                     starting_date = returns.index.min() + pd.DateOffset(years=ef_period)
@@ -493,28 +497,6 @@ def main():
 
                     #print(list_of_portfolio_values)
                     print()
-                    '''
-                    if frequency >= 30:
-                        print("Year by year performance:")
-                        prev = 1
-                        indexx = 1
-                        for i in range(len(list_of_portfolio_values)):
-                            if (i+1)%(12//(frequency//30)) == 0 or i==len(list_of_portfolio_values)-1:
-                                print(f"year {indexx}: {((list_of_portfolio_values[i]-prev)/prev)*100:.2f}%")
-                                indexx += 1
-                                prev = list_of_portfolio_values[i]
-                    else:
-                        print("Year by year performance:")
-                        print(len(list_of_portfolio_values))
-                        print((period-ef_period-1))
-                        prev = 1
-                        indexx = 1
-                        for i in range(len(list_of_portfolio_values)):
-                            if (i+1)%(len(list_of_portfolio_values)//(period-ef_period)) == 0 or i==len(list_of_portfolio_values)-1:
-                                print(f"year {indexx}: {((list_of_portfolio_values[i]-prev)/prev)*100:.2f}%")
-                                indexx += 1
-                                prev = list_of_portfolio_values[i]
-                    '''
                     total_return = list_of_portfolio_values[-1] - 1
                     annual_return_of_portfolio = math.exp((math.log(total_return+1))/(period-ef_period))-1
                     return_list.append(annual_return_of_portfolio)
@@ -530,7 +512,7 @@ def main():
                     print(f"Total trading fees paid: {sum(list_of_fee_costs)*100:.2f}%")
                     
                     if rebalance_distance != 'inf':
-                        one_over_n_difference_list.append(annual_return_of_portfolio-annualized_return_of_one_over_n)
+                        strategy_return_list.append(annual_return_of_portfolio)
                         no_rebalance_difference_list.append(annual_return_of_portfolio-return_list[0])
 
             labels = []
@@ -541,22 +523,44 @@ def main():
 
                 labels.append(f"{frequency}d, {rebalance_distance*100:.0f}%")
 
-            x = np.arange(len(one_over_n_difference_list))
+            x = np.arange(len(strategy_return_list))
 
             plt.figure(figsize=(14, 6))
-            plt.bar(x, [value * 100 for value in one_over_n_difference_list])
-            plt.axhline(0, linewidth=1)
-            plt.xticks(x, labels, rotation=90)
+            plt.bar(x, [value * 100 for value in strategy_return_list])
+
+            plt.axhline(
+                annualized_return_of_one_over_n * 100,
+                linestyle=":",
+                linewidth=2,
+                label="1/N return"
+            )
+
+            tick_step = max(1, len(labels) // 30)
+
+            plt.xticks(
+                x[::tick_step],
+                labels[::tick_step],
+                rotation=90
+            )
+
             plt.xlabel("Rebalancing frequency and safe distance")
-            plt.ylabel("Difference in annualized return (% points)")
-            plt.title("Rebalancing strategy minus 1/N strategy")
+            plt.ylabel("Annualized return (%)")
+            plt.title("Rebalancing strategy returns with 1/N reference line")
+            plt.legend()
             plt.tight_layout()
             plt.show()
 
             plt.figure(figsize=(14, 6))
             plt.bar(x, [value * 100 for value in no_rebalance_difference_list])
             plt.axhline(0, linewidth=1)
-            plt.xticks(x, labels, rotation=90)
+            tick_step = max(1, len(labels) // 30)
+
+            plt.xticks(
+                x[::tick_step],
+                labels[::tick_step],
+                rotation=90
+            )
+
             plt.xlabel("Rebalancing frequency and safe distance")
             plt.ylabel("Difference in annualized return (% points)")
             plt.title("Rebalancing strategy minus no-rebalance strategy")
