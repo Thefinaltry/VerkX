@@ -1,7 +1,6 @@
 import get_data as gt
 import efficient_frontier as ef
 import rebalance as rb
-import UI_demo as ui
 import numpy as np
 import pandas as pd
 import numpy as np
