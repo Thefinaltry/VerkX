@@ -6,3 +6,9 @@ __pycache__/**/*
 .vscode/**/*
 # iceland_price.csv
 iceland_price.csv
+# returns.csv
+returns.csv
+
+/UI Clean/__pycache__/**/*
+
+/UI/__pycache__/**/*
