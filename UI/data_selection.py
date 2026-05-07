@@ -55,20 +55,9 @@ if save_button:
     st.session_state.update({
         "data": data,
         "returns": returns,
-        "ef_returns": ef_returns
-    })      
-
-    st.session_state.update({
-        "data_source": data_source,
-        "country": country if data_source == "country" else None,
-        "tickers": tickers if data_source == "custom ticker selection" else None,
-        "period": period,
-        "ef_period": ef_period,
-        "frequency": rebalance_period,
-        "data_selected": True,
+        "ef_returns": ef_returns,
         "yearly_returns": f.cal_yearly_returns(st.session_state["returns"])
-    })
-    f.efficient_frontier_and_min_var_data()
+    })      
 
     st.switch_page("optimization.py")
 
