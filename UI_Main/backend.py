@@ -1,12 +1,9 @@
-import Old_core.tickers as tk
+import tickers as tk
 import pandas as pd
 import yfinance as yf
 import numpy as np
-import math
 import streamlit as st
-import matplotlib.pyplot as plt
 from scipy.optimize import minimize
-from matplotlib.animation import FuncAnimation
 
 def get_data(ticker=None,country=None, period="max", interval="1d"):
 
