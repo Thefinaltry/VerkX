@@ -39,7 +39,7 @@
   <p align="center">
     project_description
     <br />
-    <a href="https://github.com/github_username/repo_name"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/Thefinaltry/VerkX"><strong>Explore the docs »</strong></a>
     <br />
   </p>
 </div>
