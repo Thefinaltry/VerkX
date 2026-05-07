@@ -8,6 +8,9 @@ import matplotlib.pyplot as plt
 import warnings
 import math
 import tickers as tk
+from pathlib import Path
+
+country_to_use = 'iceland'
 
 pd.options.display.float_format = '{:.6f}'.format
 
@@ -18,6 +21,42 @@ warnings.filterwarnings(
 )
 
 ### main application logic would go here ###
+
+def get_choice5_results_file(country, risk, period, ef_period):
+    safe_country = str(country).lower().replace(" ", "_")
+    safe_risk = str(risk).lower().replace(" ", "_")
+
+    return Path(
+        f"choice5_results_{safe_country}_risk_{safe_risk}_{period}y_ef{ef_period}y.csv"
+    )
+
+
+def load_choice5_results(results_file):
+    if results_file.exists():
+        return pd.read_csv(results_file)
+    
+    return pd.DataFrame(
+        columns=[
+            "frequency",
+            "rebalance_distance",
+            "annual_return"
+        ]
+    )
+
+
+def save_choice5_result(results_file, frequency, rebalance_distance, annual_return):
+    old_results = load_choice5_results(results_file)
+
+    new_row = pd.DataFrame([
+        {
+            "frequency": frequency,
+            "rebalance_distance": rebalance_distance,
+            "annual_return": annual_return
+        }
+    ])
+
+    updated_results = pd.concat([old_results, new_row], ignore_index=True)
+    updated_results.to_csv(results_file, index=False)
 
 def fetch_from_user(slice_output: bool = False, rebalance: bool = False):
     period = 0
@@ -187,7 +226,7 @@ def menu():
         else:
             print("Invalid choice. Please select a number between 1 and 7.")
 
-def get_surviving_tickers_string(period, country='iceland', keep_pct=0.9, interval='1d'):
+def get_surviving_tickers_string(period, country=country_to_use, keep_pct=0.9, interval='1d'):
     period_string = str(period) + 'y'
 
     data = gt.get_data(
@@ -333,7 +372,7 @@ def main():
         if choice == 1:
             period, _, short_bound, long_bound = fetch_from_user()
             period_string = str(period)+'y'
-            data = gt.get_data(country='iceland', period=period_string, interval='1d')
+            data = gt.get_data(country=country_to_use, period=period_string, interval='1d')
             returns,_ = gt.get_returns(data)
             yearly_returns = gt.cal_yearly_returns(returns)
             if short_bound != None or long_bound != None:
@@ -344,14 +383,14 @@ def main():
             plt.plot(stds, target_returns[0:len(stds)])
             plt.xlabel("Volatility")
             plt.ylabel("Expected Return")
-            plt.title("Efficient Frontier (Íslenski markaðurinn)")
+            plt.title("Efficient Frontier (Iceland)")
             plt.grid(True)
             plt.show()
 
         if choice == 2:
             period, _, short_bound, long_bound = fetch_from_user()
             period_string = str(period)+'y'
-            data = gt.get_data(country='iceland', period=period_string, interval='1d')
+            data = gt.get_data(country=country_to_use, period=period_string, interval='1d')
             returns,_ = gt.get_returns(data)
             yearly_returns = gt.cal_yearly_returns(returns)
             if short_bound != None or long_bound != None:
@@ -369,7 +408,7 @@ def main():
             period, ef_period, short_bound, long_bound = fetch_from_user(True)
             period_string = str(period)+'y'
 
-            data = gt.get_data(country='iceland', period=period_string, interval='1d')
+            data = gt.get_data(country=country_to_use, period=period_string, interval='1d')
             _,ef_returns = gt.get_returns(data,keep_pct=0.9,slice_output=True,ef_period=ef_period)
             returns,_ = gt.get_returns(data)
             
@@ -394,7 +433,7 @@ def main():
         if choice == 4:
             period, ef_period, short_bound, long_bound, frequency, risk, rebalance_distance, display_graph = fetch_from_user(True, True)
             period_string = str(period)+'y'
-            data = gt.get_data(country='iceland', period=period_string, interval='1d')
+            data = gt.get_data(country=country_to_use, period=period_string, interval='1d')
             returns,ef_returns = gt.get_returns(data,keep_pct=0.9,slice_output=True,ef_period=ef_period)
             yearly_returns_ef = gt.cal_yearly_returns(ef_returns)
             return_list = []
@@ -407,9 +446,9 @@ def main():
             #print(starting_date, end_date)
         
             if short_bound != None or long_bound != None:
-                list_of_expected_returns, list_of_stds, list_of_portfolio_values, list_of_fee_costs = rb.rebalance_through_time(display_graph, returns, ef_returns, starting_date, ef_period, frequency, risk, rebalance_distance, True, short_bound, long_bound)
+                list_of_expected_returns, list_of_stds, list_of_portfolio_values, list_of_fee_costs, list_of_turnover = rb.rebalance_through_time(display_graph, returns, ef_returns, starting_date, ef_period, frequency, risk, rebalance_distance, True, short_bound, long_bound)
             else:
-                list_of_expected_returns, list_of_stds, list_of_portfolio_values, list_of_fee_costs = rb.rebalance_through_time(display_graph, returns, ef_returns, starting_date, ef_period, frequency, risk, rebalance_distance, False)
+                list_of_expected_returns, list_of_stds, list_of_portfolio_values, list_of_fee_costs, list_of_turnover = rb.rebalance_through_time(display_graph, returns, ef_returns, starting_date, ef_period, frequency, risk, rebalance_distance, False)
 
             #print(list_of_portfolio_values)
             print()
@@ -452,8 +491,6 @@ def main():
             #anim = rbu.animate_rebalancing(history)
         if choice == 5:
             #period, ef_period, short_bound, long_bound, frequency, risk, rebalance_distance, display_graph = fetch_from_user(True, True)
-            return_list = []
-            parameter_list = []
             strategy_return_list = []
             no_rebalance_difference_list = []
             period = 10
@@ -462,15 +499,35 @@ def main():
             short_bound = None
             long_bound = None
             frequency_list = [i for i in range(1,1080+1,1)]
-            risk = 6
+            risk = 1
             rebalance_distance_list = ['inf',0] #0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,0.10
             display_graph = False
+            turnover_list = []
+            turnover_labels = []
+            rebalance_count_list = []
+
+            results_file = get_choice5_results_file(
+                country=country_to_use,
+                risk=risk,
+                period=period,
+                ef_period=ef_period
+            )
+
+            print(f"Using results file: {results_file}")
+
+            saved_results = load_choice5_results(results_file)
+
+            return_list = saved_results["annual_return"].tolist()
+            parameter_list = [
+                [row["frequency"], row["rebalance_distance"]]
+                for _, row in saved_results.iterrows()
+            ]
 
             counter = 0
             nr_of_runs = ((len(rebalance_distance_list)-1)*len(frequency_list))+1
             _,annualized_return_of_one_over_n = simulate_one_over_n(simulation_period=(period-ef_period),period=period,ask_for_input=False)
 
-            data = gt.get_data(country='iceland', period=period_string, interval='1d')
+            data = gt.get_data(country=country_to_use, period=period_string, interval='1d')
             returns,ef_returns = gt.get_returns(data,keep_pct=0.9,slice_output=True,ef_period=ef_period)
             yearly_returns_ef = gt.cal_yearly_returns(ef_returns)
 
@@ -489,12 +546,38 @@ def main():
                     starting_date = returns.index[returns.index > starting_date][0]           
                     end_date = returns.index.max()
                     #print(starting_date, end_date)
+
+                    if rebalance_distance == 'inf':
+                        check_distance = 'inf'
+                    else:
+                        check_distance = rebalance_distance / 100
+
+                    already_done = (
+                        (saved_results["frequency"] == frequency)
+                        & (saved_results["rebalance_distance"].astype(str) == str(check_distance))
+                    ).any()
+
+                    if already_done:
+                        print(f"Skipping already completed run: {frequency} days, distance {check_distance}")
+                        continue
                 
                     if short_bound != None or long_bound != None:
-                        list_of_expected_returns, list_of_stds, list_of_portfolio_values, list_of_fee_costs = rb.rebalance_through_time(display_graph, returns, ef_returns, starting_date, ef_period, frequency, risk, rebalance_distance, True, short_bound, long_bound)
+                        list_of_expected_returns, list_of_stds, list_of_portfolio_values, list_of_fee_costs, list_of_turnover = rb.rebalance_through_time(display_graph, returns, ef_returns, starting_date, ef_period, frequency, risk, rebalance_distance, True, short_bound, long_bound)
                     else:
-                        list_of_expected_returns, list_of_stds, list_of_portfolio_values, list_of_fee_costs = rb.rebalance_through_time(display_graph, returns, ef_returns, starting_date, ef_period, frequency, risk, rebalance_distance, False)
+                        list_of_expected_returns, list_of_stds, list_of_portfolio_values, list_of_fee_costs, list_of_turnover = rb.rebalance_through_time(display_graph, returns, ef_returns, starting_date, ef_period, frequency, risk, rebalance_distance, False)
 
+                    total_turnover = sum(list_of_turnover)
+                    turnover_list.append(total_turnover)
+
+                    if rebalance_distance == 'inf':
+                        turnover_labels.append(f"{frequency}d, inf")
+                    else:
+                        turnover_labels.append(f"{frequency}d, {rebalance_distance:.0f}%")
+                    
+                    rebalance_count = sum(t > 1e-12 for t in list_of_turnover)
+                    total_fees = sum(list_of_fee_costs)
+
+                    rebalance_count_list.append(rebalance_count)
                     #print(list_of_portfolio_values)
                     print()
                     total_return = list_of_portfolio_values[-1] - 1
@@ -504,24 +587,65 @@ def main():
                         parameter_list.append([frequency, 'inf'])
                     else:
                         parameter_list.append([frequency, rebalance_distance / 100])
+                    
+                    if rebalance_distance == 'inf':
+                        saved_rebalance_distance = 'inf'
+                    else:
+                        saved_rebalance_distance = rebalance_distance / 100
+
+                    save_choice5_result(
+                        results_file=results_file,
+                        frequency=frequency,
+                        rebalance_distance=saved_rebalance_distance,
+                        annual_return=annual_return_of_portfolio
+                    )
 
                     counter +=1
                     print(f"{counter}/{nr_of_runs}")
                     print(f"Total return: {total_return*100:.2f}%")
                     print(f"Annualized return: {annual_return_of_portfolio*100:.2f}%")
                     print(f"Total trading fees paid: {sum(list_of_fee_costs)*100:.2f}%")
+                    print(f"Total turnover: {total_turnover*100:.2f}%")
+                    print(f"Number of rebalances: {rebalance_count}")
                     
                     if rebalance_distance != 'inf':
                         strategy_return_list.append(annual_return_of_portfolio)
                         no_rebalance_difference_list.append(annual_return_of_portfolio-return_list[0])
 
+            # Rebuild plotting lists from the saved return_list and parameter_list
             labels = []
+            strategy_return_list = []
+            no_rebalance_difference_list = []
 
-            for frequency, rebalance_distance in parameter_list:
-                if rebalance_distance == 'inf':
+            no_rebalance_return = None
+
+            seen = set()
+
+            for annual_return, parameters in zip(return_list, parameter_list):
+                frequency, rebalance_distance = parameters
+
+                # Convert CSV-loaded values safely
+                if str(rebalance_distance).lower() == "inf":
+                    no_rebalance_return = annual_return
                     continue
 
-                labels.append(f"{frequency}d, {rebalance_distance*100:.0f}%")
+                rebalance_distance = float(rebalance_distance)
+
+                key = (int(frequency), rebalance_distance)
+
+                # Skip duplicate saved rows
+                if key in seen:
+                    continue
+                seen.add(key)
+
+                strategy_return_list.append(annual_return)
+
+                if no_rebalance_return is not None:
+                    no_rebalance_difference_list.append(annual_return - no_rebalance_return)
+                else:
+                    no_rebalance_difference_list.append(0)
+
+                labels.append(f"{int(frequency)}d, {rebalance_distance*100:.0f}%")
 
             x = np.arange(len(strategy_return_list))
 
@@ -567,6 +691,26 @@ def main():
             plt.tight_layout()
             plt.show()
 
+
+            x_turnover = np.arange(len(turnover_list))
+
+            plt.figure(figsize=(14, 6))
+            plt.bar(x_turnover, [value * 100 for value in turnover_list])
+
+            tick_step = max(1, len(turnover_labels) // 30)
+
+            plt.xticks(
+                x_turnover[::tick_step],
+                turnover_labels[::tick_step],
+                rotation=90
+            )
+
+            plt.xlabel("Rebalancing frequency and safe distance")
+            plt.ylabel("Total turnover (%)")
+            plt.title("Total turnover by rebalancing frequency and safe distance")
+            plt.tight_layout()
+            plt.show()
+
             max_value = max(return_list)
             max_index = return_list.index(max_value)
 
@@ -574,7 +718,15 @@ def main():
 
             print()
             print(f"Max return: {max_value*100:.2f}%")
-            print(f"Rebalancing frequency: {best_parameters[0]} days, Safe distance: {best_parameters[1]*100:.0f}%")
+            if str(best_parameters[1]).lower() == "inf":
+                print(f"Rebalancing frequency: {best_parameters[0]} days, Safe distance: inf")
+            else:
+                print(
+                    f"Rebalancing frequency: {best_parameters[0]} days, "
+                    f"Safe distance: {float(best_parameters[1]) * 100:.0f}%"
+                )
+            print(f"Average turnover = {sum(turnover_list)/len(turnover_list)}")
+            print(f"Average number of rebalances = {sum(rebalance_count_list)/len(rebalance_count_list)}")
 
         if choice == 6:
             simulate_one_over_n()

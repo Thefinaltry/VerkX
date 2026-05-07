@@ -27,7 +27,7 @@ def rebalance_through_time(display_graph: bool, returns:pd.DataFrame, ef_returns
     list_of_expected_returns = []
     list_of_stds = []
     #list_of_weights = []
-    #list_of_turnover = []
+    list_of_turnover = []
     list_of_fee_costs = []
     #list_of_period_returns = []
     list_of_portfolio_values = []
@@ -35,7 +35,9 @@ def rebalance_through_time(display_graph: bool, returns:pd.DataFrame, ef_returns
     portfolio_value = 1
     list_of_portfolio_returns = [portfolio_value]
     previous_date = current_date
+    #fee_rate = 0.0075
     fee_rate = 0.0075
+
     is_inf = isinstance(rebalance_distance, str) and rebalance_distance.lower() == 'inf'
 
     if not is_inf:
@@ -152,7 +154,7 @@ def rebalance_through_time(display_graph: bool, returns:pd.DataFrame, ef_returns
         else:
             period_return = portfolio_value / list_of_portfolio_values[-1] - 1
 
-        #list_of_turnover.append(turnover)
+        list_of_turnover.append(turnover)
         list_of_fee_costs.append(fee_cost)
         #list_of_period_returns.append(period_return)
         list_of_portfolio_values.append(portfolio_value)
@@ -192,7 +194,7 @@ def rebalance_through_time(display_graph: bool, returns:pd.DataFrame, ef_returns
     if display_graph == True:
         plt.ioff()
         plt.show()
-    return list_of_expected_returns, list_of_stds, list_of_portfolio_values, list_of_fee_costs
+    return list_of_expected_returns, list_of_stds, list_of_portfolio_values, list_of_fee_costs, list_of_turnover
 
 def is_close(x, values, tol=0.002):
     return any(abs(x - v) <= tol for v in values)
