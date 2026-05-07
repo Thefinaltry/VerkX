@@ -9,3 +9,6 @@ iceland_price.csv
 # returns.csv
 returns.csv
 
+/UI Clean/__pycache__/**/*
+
+/UI/__pycache__/**/*
