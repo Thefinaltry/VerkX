@@ -1,5 +1,5 @@
-import efficient_frontier as ef
-import get_data as gt
+import Old_core.efficient_frontier as ef
+import Old_core.get_data as gt
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
