@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 import backend as bk
 import texts as tx
 import matplotlib.pyplot as plt
