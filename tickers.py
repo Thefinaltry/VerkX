@@ -1,6 +1,6 @@
 ### Lists of stock tickers ###
 
-allowed_countries = ['ICELAND', 'USA', 'NORWAY','NORWAY_SIMILAR','DENMARK', 'DENMARK_SIMILAR','UK']
+allowed_countries = ['ICELAND', 'USA', 'NORWAY','NORWAY_SIMILAR','DENMARK', 'DENMARK_SIMILAR','UK','INDIA','SPAIN',"JAPAN","BRAZIL"]
 
 
 # Icelandic stock tickers (31 in total)
@@ -21,3 +21,56 @@ DENMARK = ['NOVO-B.CO','GMAB.CO','ZEAL.CO','BAVA.CO','AMBU-B.CO','COLO-B.CO','DE
 DENMARK_SIMILAR = ['SCHO.CO','JDAN.CO','MAERSK-B.CO','MATAS.CO','RBREW.CO','RBLN-B.CO','FED.CO','FFARMS.CO','KBHL.CO','AGAT.CO','RTX.CO','TRYG.CO','SOLAR-B.CO','NORTHM.CO']
 
 UK = ["SHEL.L","HSBA.L","RR.L","LLOY.L","NG.L","MKS.L","DGE.L","GSK.L","BA.L","BARC.L","SBRY.L","LGEN.L","SGE.L","LSEG.L",]
+
+INDIA = ["RELIANCE.NS","TCS.NS","INFY.NS","HDFCBANK.NS","ICICIBANK.NS","SBIN.NS","ITC.NS","LT.NS","SUNPHARMA.NS","MARUTI.NS","WIPRO.NS","HINDUNILVR.NS","ASIANPAINT.NS","TATAMOTORS.NS"]
+
+SPAIN = [
+    "SAN.MC",
+    "BBVA.MC",
+    "ITX.MC",
+    "IBE.MC",
+    "REP.MC",
+    "TEF.MC",
+    "AENA.MC",
+    "ACS.MC",
+    "CABK.MC",
+    "MAP.MC",
+    "CLNX.MC",
+    "AMS.MC",
+    "SAB.MC",
+    "NTGY.MC",
+]
+
+JAPAN = [
+    "7203.T",
+    "6758.T",
+    "9984.T",
+    "8306.T",
+    "6861.T",
+    "8035.T",
+    "6098.T",
+    "9432.T",
+    "7974.T",
+    "7267.T",
+    "8001.T",
+    "8058.T",
+    "4063.T",
+    "4502.T",
+]
+
+BRAZIL = [
+    "PETR4.SA",
+    "VALE3.SA",
+    "ITUB4.SA",
+    "BBDC4.SA",
+    "ABEV3.SA",
+    "B3SA3.SA",
+    "MGLU3.SA",
+    "WEGE3.SA",
+    "BBAS3.SA",
+    "SUZB3.SA",
+    "GGBR4.SA",
+    "ELET3.SA",
+    "RENT3.SA",
+    "PRIO3.SA",
+]

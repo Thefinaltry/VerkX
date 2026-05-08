@@ -10,7 +10,7 @@ import math
 import tickers as tk
 from pathlib import Path
 
-country_to_use = 'iceland'
+country_to_use = 'norway'
 
 pd.options.display.float_format = '{:.6f}'.format
 
@@ -498,9 +498,9 @@ def main():
             ef_period = 2
             short_bound = None
             long_bound = None
-            frequency_list = [i for i in range(1,1080+1,1)]
+            frequency_list = [i for i in range(10,1000+1,10)]
             risk = 1
-            rebalance_distance_list = ['inf',0] #0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,0.10
+            rebalance_distance_list = ['inf',0]
             display_graph = False
             turnover_list = []
             turnover_labels = []

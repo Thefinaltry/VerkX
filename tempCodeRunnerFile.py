@@ -1,0 +1,1 @@
+annual_return_of_portfolio = math.exp((math.log(total_return+1))/(period-ef_period))-1
