@@ -1,7 +1,7 @@
 import sys
 sys.path.append("..")
 
-import Old_core.tickers as tk
+import tickers as tk
 
 import pandas as pd
 import yfinance as yf

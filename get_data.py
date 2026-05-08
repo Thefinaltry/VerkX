@@ -1,79 +1,8 @@
 import pandas as pd
 import yfinance as yf
-import Old_core.tickers as tk
+import tickers as tk
 import numpy as np
-import sqlite3 as sql
 
-def create_database():
-    connection = sql.connect('data.db')
-    cursor = connection.cursor()
-    create_table_query = '''
-    CREATE TABLE IF NOT EXISTS stock_data (
-        ticker TEXT,
-        date DATE,
-        open REAL,
-        high REAL,
-        low REAL,
-        close REAL,
-        volume INTEGER,
-        dividends REAL,
-        stock_splits REAL,
-        PRIMARY KEY (ticker, date)
-    )
-    '''
-    cursor.execute(create_table_query)
-    connection.commit()
-    connection.close()
-
-def insert_data(ticker=None,country=None, period="max", interval="1d"):
-    connection = sql.connect('data.db')
-    cursor = connection.cursor()
-    if ticker is not None:
-        data = yf.Ticker(ticker).history(period=period, interval=interval)
-        data.reset_index(inplace=True)
-        for _, row in data.iterrows():
-            cursor.execute('''
-                INSERT IF NOT EXISTS INTO stock_data (ticker, date, open, high, low, close, volume, dividends, stock_splits)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (ticker, row['Date'], row['Open'], row['High'], row['Low'], row['Close'], row['Volume'], row['Dividends'], row['Stock Splits']))
-        query = 'SELECT * FROM stock_data WHERE ticker = ?'
-        cursor.execute(query, (ticker,))
-        connection.commit()
-        data = cursor.fetchall()
-        connection.close()
-        return data
-    elif country is not None:
-        if country.upper() in tk.allowed_countries:
-            tickers = getattr(tk, country.upper())
-            for t in tickers:
-                data = yf.Ticker(t).history(period=period, interval=interval)
-                data.reset_index(inplace=True)
-                for _, row in data.iterrows():
-                    cursor.execute('''
-                        INSERT IF NOT EXISTS INTO stock_data (ticker, date, open, high, low, close, volume, dividends, stock_splits)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    ''', (t, row['Date'], row['Open'], row['High'], row['Low'], row['Close'], row['Volume'], row['Dividends'], row['Stock Splits']))
-            query = 'SELECT * FROM stock_data WHERE ticker IN ({})'.format(','.join('?' for _ in tickers))
-            cursor.execute(query, tickers)            
-            connection.commit()
-            data = cursor.fetchall()
-            connection.close()
-            return data
-        else:
-            raise ValueError("Country not supported.")
-    else:
-        raise ValueError("Either ticker or country must be provided.")
-
-
-
-
-    
-
-
-
-#####################################################################
-#################### GAMlI KÓÐIÐ FYRIR REFERENCE ####################
-#####################################################################
 
 def get_data(ticker=None,country=None, period="max", interval="1d"):
 
@@ -154,7 +83,7 @@ def get_returns(data: dict, keep_pct: float = 0.9, slice_output: bool = False, e
     returns_dict = {t: returns_dict[t] for t in keep}
 
     returns_df = pd.concat(returns_dict, axis=1, join="inner").sort_index()
-    returns_df.to_csv('returns.csv')
+    #returns_df.to_csv('returns.csv')
 
     if slice_output:
         start = returns_df.index.min()

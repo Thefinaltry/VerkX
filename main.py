@@ -1,13 +1,13 @@
-import Old_core.get_data as gt
-import Old_core.efficient_frontier as ef
-import Old_core.rebalance as rb
+import get_data as gt
+import efficient_frontier as ef
+import rebalance as rb
 import numpy as np
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import warnings
 import math
-import Old_core.tickers as tk
+import tickers as tk
 from pathlib import Path
 
 country_to_use = 'iceland'
