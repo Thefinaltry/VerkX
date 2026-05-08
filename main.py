@@ -10,7 +10,7 @@ import math
 import tickers as tk
 from pathlib import Path
 
-country_to_use = 'USA'
+country_to_use = 'iceland'
 
 pd.options.display.float_format = '{:.6f}'.format
 
