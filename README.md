@@ -36,13 +36,6 @@ git clone https://github.com/Thefinaltry/VerkX.git
 cd VerkX
 pip install -r requirements.txt
 ```
-
-## Run
-
-```bash
-python main.py
-```
-
 ## Dependencies
 
 * pandas
@@ -50,9 +43,55 @@ python main.py
 * matplotlib
 * scipy
 * yfinance
+  
+## Run
+
+### Navigate to the project directory
+
+* Mac/Linux
+```bash
+cd /Users/"Your/Path/To"/VerkX
+```
+* Windows
+```bash
+cd C:\Users"\Your\Path\To"\VerkX
+```
+Note: change the "Your Path To" to match the path on your computer
+
+### Run the main file
+  
+```bash
+python main.py
+```
 
 ## Goal
 
 The goal of this project is to experiment with portfolio management, efficient frontier analysis, and automated portfolio rebalancing using Python.
 
+## UI
 
+!! Work In Progress !!
+
+As of now the user interface is still a work in progress. We have non the less created a web-app solution for one that is included in this repo.
+
+## To run the UI
+
+### Navigate to the project directory
+
+* Mac/Linux
+```bash
+cd /Users/"Your/Path/To"/VerkX/UI_Main
+```
+* Windows
+```bash
+cd C:\Users"\Your\Path\To"\VerkX\UI_Main
+```
+Note: change the "Your Path To" to match the path on your computer
+
+### Run
+
+```bash
+streamlit run streamlir_app.py
+```
+
+Note: This should open up a tab on your default browser to the locally hosted web-app.
