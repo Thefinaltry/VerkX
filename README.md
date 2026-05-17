@@ -1,6 +1,13 @@
-# VerkX
+# Rebalancing a Portfolio
 
-VerkX is a Python project for portfolio optimization and portfolio rebalancing.
+Rebalancing a Portfolio is a Python project for portfolio optimization and portfolio rebalancing. This project is a B.Sc engeneering final project from students at Reykjavík University.
+
+Project Members:
+
+* Auðunn Fannar HafÞórsson
+* Birgir Bragi Gunnþórsson
+* Finnur H. Finnsson
+* Sváfnir Ingi Jónsson
 
 The code:
 
